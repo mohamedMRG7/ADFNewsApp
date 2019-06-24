@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.1" xmlns:af="http://xmlns.oracle.com/adf/faces/rich"
+          xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html">
+  <af:panelStretchLayout id="psl1"
+                         inlineStyle="margin-bottom:50px; margin-left:50px; margin-right:50px; margin-top:50px; border-color:Black; border-bottom-left-radius:20px 20px; border-bottom-right-radius:20px 20px; border-top-left-radius:20px 20px; border-top-right-radius:20px;">
+    <f:facet name="start"/>
+                    <f:facet name="end"/>
+                    <f:facet name="top"/>
+                    <f:facet name="bottom"/>
+                    <f:facet name="center">
+            <af:panelSplitter id="ps1" splitterPosition="500">
+                <f:facet name="first">
+                    <af:panelGroupLayout id="pgl1" layout="vertical" binding="#{MainBean.panalGroupComp}">
+                        <af:inputText label="Title" id="it1" value="#{MainBean.title}"/>
+                        <af:inputFile label="Thumbnail" id="if11" autoSubmit="true"
+                                      valueChangeListener="#{MainBean.uploadThumbnail}"/>
+                        <af:panelHeader text="Content" id="ph1">
+                            <f:facet name="toolbar">
+                                <af:toolbar id="t1">
+                                    <af:button text="Add " id="b1" actionListener="#{MainBean.addComponnent}"/>
+                                    <af:button text="Preview" id="b2" action="#{MainBean.createPreviewComponent}"
+                                               partialTriggers="pgl3"/>
+                                </af:toolbar>
+                            </f:facet>
+                            <f:facet name="menuBar">
+                                <af:button text="OpenHTML" id="b3" actionListener="#{MainBean.preview}"/>
+                            </f:facet>
+                            <f:facet name="legend">
+                                <af:panelGroupLayout id="pgl2" layout="vertical"/>
+                            </f:facet>
+                            <f:facet name="info"/>
+                        </af:panelHeader>
+                    </af:panelGroupLayout>
+                </f:facet>
+                <f:facet name="second">
+                    <af:panelGroupLayout id="pgl3" binding="#{MainBean.previewPanalGroupComp}" layout="vertical"
+                                         inlineStyle="margin-left:100px; margin-right:100px;">
+                        <af:panelGroupLayout id="pgl4" layout="vertical" halign="center">
+                            <af:image id="i1" source="/downloadimageclass?path=#{MainBean.thumbNail}"
+                                      inlineStyle="max-height:200px; max-width:300px;"/>
+                            <af:outputText value="#{MainBean.title}" id="ot1" inlineStyle="font-size:large;"/>
+                        </af:panelGroupLayout>
+                    </af:panelGroupLayout>
+                </f:facet>
+            </af:panelSplitter>
+        </f:facet>
+  </af:panelStretchLayout>
+</jsp:root>
+
