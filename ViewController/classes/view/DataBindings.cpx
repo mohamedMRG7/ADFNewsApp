@@ -8,8 +8,17 @@
   </definitionFactories>
   <pageMap>
     <page path="/MainPage.jspx" usageId="view_MainPagePageDef"/>
+    <page path="/CreateNews.jsff" usageId="view_CreateNewsPageDef"/>
   </pageMap>
   <pageDefinitionUsages>
     <page id="view_MainPagePageDef" path="view.pageDefs.MainPagePageDef"/>
+    <page id="view_CreateNewsPageDef" path="view.pageDefs.CreateNewsPageDef"/>
   </pageDefinitionUsages>
+  <dataControlUsages>
+    <BC4JDataControl id="AppModuleAMDataControl" Package="model.am"
+                     FactoryClass="oracle.adf.model.bc4j.DataControlFactoryImpl" SupportsTransactions="true"
+                     SupportsFindMode="true" SupportsRangesize="true" SupportsResetState="true"
+                     SupportsSortCollection="true" Configuration="AppModuleAMLocal" syncMode="Immediate"
+                     xmlns="http://xmlns.oracle.com/adfm/datacontrol"/>
+  </dataControlUsages>
 </Application>

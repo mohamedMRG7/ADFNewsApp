@@ -11,15 +11,22 @@
             <af:panelSplitter id="ps1" splitterPosition="500">
                 <f:facet name="first">
                     <af:panelGroupLayout id="pgl1" layout="vertical" binding="#{MainBean.panalGroupComp}">
-                        <af:inputText label="Title" id="it1" value="#{MainBean.title}"/>
+                        <af:inputText label="Title" id="it1" value="#{MainBean.title}" labelStyle="font-size:large;"/>
+                        <af:spacer width="10" height="10" id="s1"/>
                         <af:inputFile label="Thumbnail" id="if11" autoSubmit="true"
-                                      valueChangeListener="#{MainBean.uploadThumbnail}"/>
+                                      valueChangeListener="#{MainBean.uploadThumbnail}" labelStyle="font-size:large;"/>
+                        <af:spacer width="10" height="30" id="s2"/>
                         <af:panelHeader text="Content" id="ph1">
                             <f:facet name="toolbar">
                                 <af:toolbar id="t1">
                                     <af:button text="Add " id="b1" actionListener="#{MainBean.addComponnent}"/>
+                                    <af:button text="button 1" id="b5" actionListener="#{MainBean.test}"/>
                                     <af:button text="Preview" id="b2" action="#{MainBean.createPreviewComponent}"
                                                partialTriggers="pgl3"/>
+                                    <af:button text="Commit" id="b4"
+                                               
+                                               action="#{bindings.Commit.execute}"
+                                               actionListener="#{MainBean.insertData}"/>
                                 </af:toolbar>
                             </f:facet>
                             <f:facet name="menuBar">
@@ -33,9 +40,11 @@
                     </af:panelGroupLayout>
                 </f:facet>
                 <f:facet name="second">
-                    <af:panelGroupLayout id="pgl3" binding="#{MainBean.previewPanalGroupComp}" layout="vertical"
-                                         inlineStyle="margin-left:100px; margin-right:100px;">
-                        <af:panelGroupLayout id="pgl4" layout="vertical" halign="center">
+                    <af:panelGroupLayout id="pgl3" layout="vertical"
+                                         inlineStyle="margin-left:100px; margin-right:100px;"
+                                         binding="#{MainBean.previewPanalGroupComp}">
+                        <af:panelGroupLayout id="pgl4" layout="vertical" halign="center"
+                                             inlineStyle="border-width:thick; outline-offset:10px;">
                             <af:image id="i1" source="/downloadimageclass?path=#{MainBean.thumbNail}"
                                       inlineStyle="max-height:200px; max-width:300px;"/>
                             <af:outputText value="#{MainBean.title}" id="ot1" inlineStyle="font-size:large;"/>
