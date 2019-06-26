@@ -63,6 +63,8 @@ import oracle.jbo.ViewObject;
 
 import oracle.jbo.domain.BlobDomain;
 
+import oracle.stellent.ridc.IdcClientException;
+
 import org.apache.myfaces.trinidad.model.UploadedFile;
 import org.apache.myfaces.trinidad.render.ExtendedRenderKitService;
 import org.apache.myfaces.trinidad.util.Service;
@@ -71,10 +73,11 @@ import org.apache.myfaces.trinidad.util.Service;
 public class MainBean implements Serializable {
     private RichPanelGroupLayout panalGroupComp;
     private RichInputFile input;
-    List<HtmlInputTextarea> inputTextList = new ArrayList<>();
-    List<RichInputFile> inputFileList = new ArrayList<>();
-    List<RichPanelGroupLayout> containersList = new ArrayList<>();
 
+    List<RichPanelGroupLayout> containersList = new ArrayList<>();
+    List<String> contentDIDList = new ArrayList<>();
+    Map<String, String> contentDIDMap = new HashMap<>();
+    int tOut = 0;
     private RichPanelGroupLayout previewPanalGroupComp;
     private RichOutputText f;
     private RichImage ds;
@@ -89,7 +92,16 @@ public class MainBean implements Serializable {
     String thumbNail;
     String htmlThumbNail;
     private HtmlInputTextarea inArea;
+    UCMUtilities utils;
 
+    public MainBean() {
+        try {
+            utils = new UCMUtilities("idc://10.3.1.88:4444", "weblogic", "welcome1");
+            utils.login();
+        } catch (IdcClientException e) {
+        }
+
+    }
 
     public void setDialog(RichDialog dialog) {
         this.dialog = dialog;
@@ -142,8 +154,7 @@ public class MainBean implements Serializable {
         return imagePath;
     }
 
-    public MainBean() {
-    }
+   
 
     public void setPanalGroupComp(RichPanelGroupLayout panalGroupComp) {
         this.panalGroupComp = panalGroupComp;
@@ -174,10 +185,9 @@ public class MainBean implements Serializable {
         if (valueChangeEvent.getNewValue() != null) {
             //Get File Object from VC Event
             UploadedFile fileVal = (UploadedFile) valueChangeEvent.getNewValue();
-            //Upload File to path- Return actual server path
-            thumbNail = uploadFile(fileVal, binPath);
-           // uploadFile(fileVal, jdevPath);
-            htmlThumbNail = thumbNail.replace(binPath, "");
+          
+            // uploadFile(fileVal, jdevPath);
+            htmlThumbNail = uploadFileToUCM(fileVal);
 
         }
     }
@@ -188,11 +198,50 @@ public class MainBean implements Serializable {
             //Get File Object from VC Event
             UploadedFile fileVal = (UploadedFile) valueChangeEvent.getNewValue();
             //Upload File to path- Return actual server path
-            uploadFile(fileVal, binPath);
-            uploadFile(fileVal, jdevPath);
+           
+            String imageDid = uploadFileToUCM(fileVal);
+            contentDIDMap.put(fileVal.getFilename(), imageDid);
 
 
         }
+    }
+
+
+    private String uploadFileToUCM(UploadedFile file) {
+
+        UploadedFile myfile = file;
+
+        String dId = null;
+        if (myfile != null) {
+            // All uploaded files will be stored in below path
+            System.out.println(">>>>filename" + file.getFilename());
+            setImagePath(file.getFilename());
+            fNAme = file.getFilename();
+            InputStream inputStream = null;
+            try {
+                inputStream = myfile.getInputStream();
+                Random r=new Random();
+                dId =
+                    utils.checkInDocumentReturnDID(myfile.getFilename()+r.nextInt(), getTitle(), "Document", "public", inputStream,
+                                                   myfile.getFilename(), new HashMap());
+
+            } catch (Exception e) {
+            }
+
+        }
+        //Returns the path where file is stored
+        return dId;
+    }
+
+
+    public String getUcmURL(String did) {
+        String url = null;
+        try {
+            url = utils.getDocUrlByDid(did);
+        } catch (IOException e) {
+        } catch (IdcClientException e) {
+        }
+        return url;
     }
 
     public void addComponnent(ActionEvent actionEvent) {
@@ -202,7 +251,7 @@ public class MainBean implements Serializable {
         createInputTextComponent(container);
         createFileUploadeComp(container);
         createRemovePanalComp(container);
-    
+
 
     }
 
@@ -222,15 +271,26 @@ public class MainBean implements Serializable {
         int i = 0;
         for (RichPanelGroupLayout container : containersList) {
             HtmlInputTextarea inText = (HtmlInputTextarea) container.getChildren().get(0);
-            RichInputFile imageComp = (RichInputFile) container.getChildren().get(1);
-            if (imageComp.getValue() != null)
-                fNAme += ((UploadedFile) imageComp.getValue()).getFilename() + ",";
+            RichInputFile imageComp = (RichInputFile) containersList.get(i).getChildren().get(1);
 
+            if (imageComp.getValue() != null) {
+                String imageName = ((UploadedFile) imageComp.getValue()).getFilename();
+                String imgDID = contentDIDMap.get(imageName);
+                String url = getUcmURL(imgDID);
+                fNAme += url + ",";
+            } else {
+                fNAme += "NA,";
+            }
+
+            if(inText.getValue().toString()!=null && !inText.getValue().toString().equals(""))
             contesnt += inText.getValue().toString() + ",";
+            else
+                contesnt+="NA,";
             i++;
         }
 
-        openNewWindow(fNAme, contesnt, title, htmlThumbNail);
+
+        openNewWindow(fNAme, contesnt, title, getUcmURL(htmlThumbNail));
     }
 
 
@@ -303,7 +363,7 @@ public class MainBean implements Serializable {
         Random r = new Random();
         richImage.setId("rit1" + r.nextInt());
         richImage.setSource("/downloadimageclass?path=" + path);
-       
+
         richImage.setInlineStyle("max-height:200px; max-width:300px;");
         addComponent(getPreviewPanalGroupComp(), richImage);
         return richImage;
@@ -312,7 +372,7 @@ public class MainBean implements Serializable {
     private String uploadFile(UploadedFile file, String pth) {
 
         UploadedFile myfile = file;
-        
+
         String path = null;
         if (myfile != null) {
             // All uploaded files will be stored in below path
@@ -325,10 +385,6 @@ public class MainBean implements Serializable {
             try {
                 FileOutputStream out = new FileOutputStream(path);
                 inputStream = myfile.getInputStream();
-                UCMUtilities utils=new UCMUtilities("idc://10.3.1.88:4444","weblogic", "welcome1");
-                utils.login();
-                String dId=utils.checkInDocumentReturnDID(myfile.getFilename(), "documentTitle", "Document" , "public", inputStream, myfile.getFilename(), new HashMap());
-                System.out.println(dId);
                 byte[] buffer = new byte[8192];
                 int bytesRead = 0;
                 while ((bytesRead = inputStream.read(buffer, 0, 8192)) != -1) {
@@ -356,7 +412,8 @@ public class MainBean implements Serializable {
     public void openNewWindow(String image, String content, String title, String thumbNail) {
         ExtendedRenderKitService erks =
             Service.getRenderKitService(FacesContext.getCurrentInstance(), ExtendedRenderKitService.class);
-
+         //TODO
+        //Change id to deployment server
         erks.addScript(FacesContext.getCurrentInstance(),
                        "window.open('http://127.0.0.1:7101/ViewController/htmlreviewservlet?image=" + image +
                        "&content=" + content + "&title=" + title + "&thumbnail=" + thumbNail + "');");
@@ -411,14 +468,15 @@ public class MainBean implements Serializable {
         MethodExpression methodExp = elFactory.createMethodExpression(elContext, validatorName, null, argtypes);
         return new MethodExpressionActionListener(methodExp);
     }
+
     private BlobDomain createBlobDomain(String value) throws IOException {
 
-    BlobDomain blobDomain = new BlobDomain(value.getBytes());
-           
-    return blobDomain;
+        BlobDomain blobDomain = new BlobDomain(value.getBytes());
+
+        return blobDomain;
     }
 
-    public void insertInNewsTable(String titleAr, String titleEN, String descAR, String descEN,BlobDomain  contentAR,
+    public void insertInNewsTable(String titleAr, String titleEN, String descAR, String descEN, BlobDomain contentAR,
                                   BlobDomain contentEN, BlobDomain thumbNail, String createdBy) {
 
         BindingContext ctx = BindingContext.getCurrent();
@@ -457,25 +515,25 @@ public class MainBean implements Serializable {
 
 
     public String getContentString() {
-            String content="";
-            for (int i = 0; i < containersList.size(); i++) {
-                HtmlInputTextarea inText = (HtmlInputTextarea) containersList.get(i).getChildren().get(0);
-                RichInputFile imageComp = (RichInputFile) containersList.get(i).getChildren().get(1);
-                String textVal = (String) inText.getValue();
-                String imageSrc = "";
-                content+="<p>" + textVal + "</p>";
-                
-                if (imageComp.getValue() != null) {
-                    imageSrc = binPath + ((UploadedFile) imageComp.getValue()).getFilename();
-                    content+="<img src=" + imageSrc + " alt='image' width=\"300\" height=\"400\" >";
-                }
+        String content = "";
+        for (int i = 0; i < containersList.size(); i++) {
+            HtmlInputTextarea inText = (HtmlInputTextarea) containersList.get(i).getChildren().get(0);
+            RichInputFile imageComp = (RichInputFile) containersList.get(i).getChildren().get(1);
+            String textVal = (String) inText.getValue();
+            content += "<p>" + textVal + "</p>";
+ 
+            //--------------------------------
+            if (imageComp.getValue() != null) {
+                String imageName = ((UploadedFile) imageComp.getValue()).getFilename();
+                String imgDID = contentDIDMap.get(imageName);
+                String url = getUcmURL(imgDID);
+                content += "<img src=" + url + " alt='image' width=\"300\" height=\"400\" >";
+            } 
 
-               
-            }
+            i++;
+        }
 
 
-            
-       
         return content;
 
     }
@@ -493,27 +551,26 @@ public class MainBean implements Serializable {
 
     }
 
-    public String getHTMLThumbNail(){
-        String htmlThumNail="<img src=" + getThumbNail() + " alt='image' width=\"300\" height=\"400\" >";
+    public String getHTMLThumbNail() {
+        String htmlThumNail = "<img src=" + getUcmURL(htmlThumbNail) + " alt='image' width=\"300\" height=\"400\" >";
         return htmlThumNail;
-        }
-        
-                                      
-    
-    
-    public void readBlob()
-    {
+    }
+
+
+    public void readBlob() {
         BindingContext ctx = BindingContext.getCurrent();
         DCBindingContainer container = (DCBindingContainer) ctx.getCurrentBindingsEntry();
         DCIteratorBinding it = container.findIteratorBinding("WcpNewsFeedIterator");
         ViewObject vo = it.getViewObject();
         vo.executeQuery();
-        if(vo.hasNext()){
-            Row r=vo.next();
+        if (vo.hasNext()) {
+            Row r = vo.next();
             BlobDomain b = (BlobDomain) r.getAttribute(5);
-           
-            System.out.println(b.toString()+"   "+b);
+
+            System.out.println(b.toString() + "   " + b);
         }
-        
+
     }
+
+
 }
