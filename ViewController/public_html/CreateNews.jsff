@@ -9,7 +9,14 @@
                     <f:facet name="bottom"/>
                     <f:facet name="center">
             <af:panelGroupLayout id="pgl1" layout="vertical" binding="#{MainBean.panalGroupComp}">
-                <af:inputText label="Title" id="it1" value="#{MainBean.title}" labelStyle="font-size:large;"/>
+                <af:inputText label="English title" id="it1" value="#{MainBean.title}" labelStyle="font-size:large;"/>
+                <af:inputText label="English description" id="it3" labelStyle="font-size:large;"
+                              value="#{MainBean.englishDesc}"/>
+                <af:spacer width="10" height="10" id="s3"/>
+                <af:inputText label="Arabic title" id="it2" labelStyle="font-size:large;"
+                              value="#{MainBean.arabicTitle}"/>
+                <af:inputText label="Arabic description" id="it4" labelStyle="font-size:large;"
+                              value="#{MainBean.arabicDesc}"/>
                 <af:spacer width="10" height="10" id="s1"/>
                 <af:inputFile label="Thumbnail" id="if11" autoSubmit="true"
                               valueChangeListener="#{MainBean.uploadThumbnail}" labelStyle="font-size:large;"/>

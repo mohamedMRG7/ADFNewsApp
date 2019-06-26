@@ -13,6 +13,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 
+import java.io.UnsupportedEncodingException;
+
+import java.net.URLEncoder;
+
 import java.nio.file.Files;
 
 import java.sql.SQLException;
@@ -73,7 +77,7 @@ import org.apache.myfaces.trinidad.util.Service;
 public class MainBean implements Serializable {
     private RichPanelGroupLayout panalGroupComp;
     private RichInputFile input;
-
+   
     List<RichPanelGroupLayout> containersList = new ArrayList<>();
     List<String> contentDIDList = new ArrayList<>();
     Map<String, String> contentDIDMap = new HashMap<>();
@@ -93,6 +97,9 @@ public class MainBean implements Serializable {
     String htmlThumbNail;
     private HtmlInputTextarea inArea;
     UCMUtilities utils;
+    private String arabicTitle;
+    private String englishDesc;
+    private String arabicDesc;
 
     public MainBean() {
         try {
@@ -269,6 +276,8 @@ public class MainBean implements Serializable {
         fNAme = "";
         String contesnt = "";
         int i = 0;
+        String splitter="03213216523c";
+       // String quateCharConverter="021321325v";
         for (RichPanelGroupLayout container : containersList) {
             HtmlInputTextarea inText = (HtmlInputTextarea) container.getChildren().get(0);
             RichInputFile imageComp = (RichInputFile) containersList.get(i).getChildren().get(1);
@@ -283,13 +292,14 @@ public class MainBean implements Serializable {
             }
 
             if(inText.getValue().toString()!=null && !inText.getValue().toString().equals(""))
-            contesnt += inText.getValue().toString() + ",";
+            contesnt += inText.getValue().toString() + splitter;
             else
-                contesnt+="NA,";
+                contesnt+="NA"+splitter;
             i++;
         }
 
-
+        
+        System.out.println(">>>>>"+contesnt);
         openNewWindow(fNAme, contesnt, title, getUcmURL(htmlThumbNail));
     }
 
@@ -414,9 +424,20 @@ public class MainBean implements Serializable {
             Service.getRenderKitService(FacesContext.getCurrentInstance(), ExtendedRenderKitService.class);
          //TODO
         //Change id to deployment server
+        String contentEncod="";
+        String titleEncod="";
+        try {
+            if(!content.equals("")&&content!=null)
+            contentEncod = URLEncoder.encode(content, "UTF-8");
+            if(!title.equals("")&&title!=null)
+            titleEncod=URLEncoder.encode(title, "UTF-8");
+            
+            
+        } catch (UnsupportedEncodingException e) {
+        }
         erks.addScript(FacesContext.getCurrentInstance(),
                        "window.open('http://127.0.0.1:7101/ViewController/htmlreviewservlet?image=" + image +
-                       "&content=" + content + "&title=" + title + "&thumbnail=" + thumbNail + "');");
+                       "&content="+contentEncod+"&title=" + titleEncod + "&thumbnail=" + thumbNail + "');");
     }
 
 
@@ -544,7 +565,7 @@ public class MainBean implements Serializable {
         System.out.println(getContentString());
 
         try {
-            insertInNewsTable(getTitle(), "m", "das", "fasd", createBlobDomain(getContentString()),
+            insertInNewsTable(getArabicTitle(), getTitle(), getArabicDesc(), getEnglishDesc(), createBlobDomain(getContentString()),
                               createBlobDomain(getContentString()), createBlobDomain(getHTMLThumbNail()), "Ragab");
         } catch (IOException e) {
         }
@@ -573,4 +594,29 @@ public class MainBean implements Serializable {
     }
 
 
+    public void setArabicTitle(String arabicTitle) {
+        this.arabicTitle = arabicTitle;
+    }
+
+    public String getArabicTitle() {
+        return arabicTitle;
+    }
+
+    public void setEnglishDesc(String englishDesc) {
+        this.englishDesc = englishDesc;
+    }
+
+    public String getEnglishDesc() {
+        return englishDesc;
+    }
+
+    public void setArabicDesc(String arabicDesc) {
+        this.arabicDesc = arabicDesc;
+    }
+
+    public String getArabicDesc() {
+        return arabicDesc;
+    }
+    
+    public enum Language{ENGLISH,ARABIC}
 }
