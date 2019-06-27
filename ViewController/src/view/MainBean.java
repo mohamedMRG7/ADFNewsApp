@@ -314,7 +314,7 @@ public class MainBean implements Serializable {
             }
            
             RichInputText inText = (RichInputText) container.getChildren().get(langComp);
-            if (inText.getValue().toString() != null && !inText.getValue().toString().equals(""))
+            if (inText.getValue() != null && !inText.getValue().equals(""))
                 contesnt += inText.getValue().toString() + splitter;
             else
                 contesnt += "NA" + splitter;
@@ -469,7 +469,7 @@ public class MainBean implements Serializable {
         }
         System.out.println(">>>>>>>>desc"+descEncod+"DESCRIPTION "+desc+"title "+titleEncod+"content "+contentEncod);
         erks.addScript(FacesContext.getCurrentInstance(),
-                       "window.open('http://127.0.0.1:7101/ViewController/htmlreviewservlet?image=" + image +
+                       "window.open('/ViewController/htmlreviewservlet?image=" + image +
                        "&content=" + contentEncod + "&title=" + titleEncod + "&thumbnail=" + thumbNail +  "&desc=" + descEncod+"');");
     }
 

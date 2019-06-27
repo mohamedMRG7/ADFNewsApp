@@ -46,15 +46,15 @@ public class HtmlReviewServlet extends HttpServlet {
         out.println("<html>");
         out.println("<head><title>DownloadImageClass</title>");
         out.println("<link rel='stylesheet' type='text/css' href="+request.getContextPath()+"/css/htmlStyle.css />");
-        
+        out.println("<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css\">");
         out.println("</head>");
         out.println("<body>");
-        //<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+       // <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
         
-        out.println("<div class=\"maincont\">");
         out.println("<div class=\"container\">");
-        out.println("<img src=" + thumbNail + " alt='image' style=\"width:100%; height: 350px;\" >");
-        out.println("<div class=\"text-block\"> ");
+        out.println("<div class=\"jumbotron\">");
+        out.println("<img src=" + thumbNail + " alt='image' style=\"width:200px; height: 200px; border-radius: 50%; float: right;\" >");
+        out.println("<div class=\"\"> ");
         out.println("<h4>" + title + "</h4>");
         out.println("<p>"+description+"</p>");
         out.println("</div>");        
@@ -67,19 +67,62 @@ public class HtmlReviewServlet extends HttpServlet {
         } else {
             fullSize = content.length;
         }
+        out.println("<table style=\"width:100%\">");
         for (int i = 0; i < fullSize; i++) {
+            out.println("<tr>");
             
-            out.println("<div style=\"margin: 25px 50px 75px 100px;  \">");
-            if(imagesList[i]!=null && !imagesList[i].equals("NA"))
-            out.println("<img class=\"cimage\" src=" + imagesList[i] + " alt='image' width=\"300\" height=\"400\" style=\"margin: 25px 50px 75px 100px;  float: none;\" >");
+            //out.println("<div class=\"row\" style=\"margin: 25px 50px 75px 100px;  \">");
+            if(i%2==0){
+           
+            if(imagesList[i]!=null && !imagesList[i].equals("NA")){
+                out.println("<td valign=\"top\">");
+                    out.println("<div >");
+                          out.println("<img class=\"cimage\" src=" + imagesList[i] + " alt='image' width=\"300\" height=\"400\" style=\"margin: 25px 50px 75px 100px; border-radius: 50%; \" >");
+                    out.println("</div>");
+                out.println("</td>");
+            }
+           
             
-            if(content[i]!=null && !content[i].equals("NA"))
-            out.println("<p dir=\"auto\" style=\"font-weight: 400;  font-size: large; \">" + content[i] + "</p>");
+            if(content[i]!=null && !content[i].equals("NA")){
+                out.println("<td valign=\"middle\" align=\"justify\">");
+                     out.println("<div  \">");
+                          out.println("<p dir=\"auto\" style=\"font-weight: 400;  font-size: large; \">" + content[i] + "</p>");
+                    out.println("</div>");
+                out.println("</td>");
+            }
             
-            out.println("</div>");
+            //out.println("</div>");
             
 
+            }else {
+                
+                    if(content[i]!=null && !content[i].equals("NA")){
+                        out.println("<td valign=\"middle\" align=\"justify\">");
+                             out.println("<div  \">");
+                                  out.println("<p dir=\"auto\" style=\"font-weight: 400;  font-size: large; \">" + content[i] + "</p>");
+                            out.println("</div>");
+                        out.println("</td>");
+                    }
+                
+                    if(imagesList[i]!=null && !imagesList[i].equals("NA")){
+                        out.println("<td valign=\"top\">");
+                            out.println("<div >");
+                                  out.println("<img class=\"cimage\" src=" + imagesList[i] + " alt='image' width=\"300\" height=\"400\" style=\"margin: 25px 50px 75px 100px; border-radius: 50%; \" >");
+                            out.println("</div>");
+                        out.println("</td>");
+                    }
+                
+                }
+            out.println("</tr>");
         }
+        
+        out.println("</table>");
+        /*<table>
+    <tr>
+        <td valign="top"><img src="myImage.jpg" alt="" /></td>
+        <td valign="middle">This is my text!</td>
+    </tr>
+</table>*/
        
         out.println("</div>");
         out.println("</body></html>");
