@@ -392,9 +392,9 @@ public class WcpNewsFeedEOImpl extends EntityImpl {
         if(operation==DML_INSERT)
         {
             SequenceImpl seq=new  SequenceImpl("NEWS_SEQ",getDBTransaction());
-            Number number = seq.getSequenceNumber();
-            BigDecimal bd=new BigDecimal(number.toString());
-            setNfSeq(bd);
+            BigDecimal number = seq.getSequenceNumber().getBigDecimalValue();
+            
+            setNfSeq(number);
             super.doDML(operation, e);
         }
     }

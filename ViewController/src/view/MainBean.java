@@ -77,7 +77,7 @@ import org.apache.myfaces.trinidad.util.Service;
 public class MainBean implements Serializable {
     private RichPanelGroupLayout panalGroupComp;
     private RichInputFile input;
-   
+
     List<RichPanelGroupLayout> containersList = new ArrayList<>();
     List<String> contentDIDList = new ArrayList<>();
     Map<String, String> contentDIDMap = new HashMap<>();
@@ -100,11 +100,14 @@ public class MainBean implements Serializable {
     private String arabicTitle;
     private String englishDesc;
     private String arabicDesc;
+    private RichInputText incasd;
 
     public MainBean() {
         try {
             utils = new UCMUtilities("idc://10.3.1.88:4444", "weblogic", "welcome1");
             utils.login();
+            
+            readBlob();
         } catch (IdcClientException e) {
         }
 
@@ -161,7 +164,6 @@ public class MainBean implements Serializable {
         return imagePath;
     }
 
-   
 
     public void setPanalGroupComp(RichPanelGroupLayout panalGroupComp) {
         this.panalGroupComp = panalGroupComp;
@@ -192,7 +194,7 @@ public class MainBean implements Serializable {
         if (valueChangeEvent.getNewValue() != null) {
             //Get File Object from VC Event
             UploadedFile fileVal = (UploadedFile) valueChangeEvent.getNewValue();
-          
+
             // uploadFile(fileVal, jdevPath);
             htmlThumbNail = uploadFileToUCM(fileVal);
 
@@ -205,7 +207,7 @@ public class MainBean implements Serializable {
             //Get File Object from VC Event
             UploadedFile fileVal = (UploadedFile) valueChangeEvent.getNewValue();
             //Upload File to path- Return actual server path
-           
+
             String imageDid = uploadFileToUCM(fileVal);
             contentDIDMap.put(fileVal.getFilename(), imageDid);
 
@@ -227,10 +229,10 @@ public class MainBean implements Serializable {
             InputStream inputStream = null;
             try {
                 inputStream = myfile.getInputStream();
-                Random r=new Random();
+                Random r = new Random();
                 dId =
-                    utils.checkInDocumentReturnDID(myfile.getFilename()+r.nextInt(), getTitle(), "Document", "public", inputStream,
-                                                   myfile.getFilename(), new HashMap());
+                    utils.checkInDocumentReturnDID(myfile.getFilename() + r.nextInt(), getTitle(), "Document", "public",
+                                                   inputStream, myfile.getFilename(), new HashMap());
 
             } catch (Exception e) {
             }
@@ -253,9 +255,11 @@ public class MainBean implements Serializable {
 
     public void addComponnent(ActionEvent actionEvent) {
         // Add event code here...
-        RichPanelGroupLayout container = createaddCompPanalGroup();
+        RichPanelGroupLayout container =
+            createaddCompPanalGroup(getPanalGroupComp(), RichPanelGroupLayout.LAYOUT_HORIZONTAL);
         containersList.add(container);
-        createInputTextComponent(container);
+        createInputTextComponent(container, Language.ENGLISH);
+        createInputTextComponent(container, Language.ARABIC);
         createFileUploadeComp(container);
         createRemovePanalComp(container);
 
@@ -271,16 +275,34 @@ public class MainBean implements Serializable {
 
     public void preview(ActionEvent actionEvent) {
         // Add event code here...
+        showPreview(Language.ENGLISH);
+    }
+    public void arabicPreview(ActionEvent actionEvent) {
+        // Add event code here...
+        showPreview(Language.ARABIC);
+    }
 
-
+    public void showPreview(Language lang) {
         fNAme = "";
         String contesnt = "";
         int i = 0;
-        String splitter="03213216523c";
-       // String quateCharConverter="021321325v";
+        String splitter = "03213216523c";
+        String selectedTitle="";
+        String selectedDesc="";
+        int langComp;
+        
+        if (lang == Language.ENGLISH){
+            langComp = 0;
+            selectedTitle=getTitle();
+            selectedDesc=getEnglishDesc();
+        }else{
+            langComp = 1;
+            selectedTitle=getArabicTitle();
+            selectedDesc=getArabicDesc();
+        }
         for (RichPanelGroupLayout container : containersList) {
-            HtmlInputTextarea inText = (HtmlInputTextarea) container.getChildren().get(0);
-            RichInputFile imageComp = (RichInputFile) containersList.get(i).getChildren().get(1);
+
+            RichInputFile imageComp = (RichInputFile) containersList.get(i).getChildren().get(2);
 
             if (imageComp.getValue() != null) {
                 String imageName = ((UploadedFile) imageComp.getValue()).getFilename();
@@ -290,19 +312,21 @@ public class MainBean implements Serializable {
             } else {
                 fNAme += "NA,";
             }
-
-            if(inText.getValue().toString()!=null && !inText.getValue().toString().equals(""))
-            contesnt += inText.getValue().toString() + splitter;
+           
+            RichInputText inText = (RichInputText) container.getChildren().get(langComp);
+            if (inText.getValue().toString() != null && !inText.getValue().toString().equals(""))
+                contesnt += inText.getValue().toString() + splitter;
             else
-                contesnt+="NA"+splitter;
+                contesnt += "NA" + splitter;
             i++;
         }
 
         
-        System.out.println(">>>>>"+contesnt);
-        openNewWindow(fNAme, contesnt, title, getUcmURL(htmlThumbNail));
-    }
+        
+        System.out.println(selectedDesc);
+        openNewWindow(fNAme, contesnt, selectedTitle, getUcmURL(htmlThumbNail),selectedDesc);
 
+    }
 
     //
     public void addComponent(UIComponent parentUIComponent, UIComponent childUIComponent) {
@@ -311,12 +335,15 @@ public class MainBean implements Serializable {
     }
 
 
-    public HtmlInputTextarea createInputTextComponent(RichPanelGroupLayout layOut) {
-        HtmlInputTextarea richInputText = new HtmlInputTextarea();
+    public RichInputText createInputTextComponent(RichPanelGroupLayout layOut, Language lang) {
+        RichInputText richInputText = new RichInputText();
         Random r = new Random();
         richInputText.setId("rit1" + r.nextInt());
-        richInputText.setLabel("Content");
-        richInputText.setCols(40);
+        richInputText.setLabel(lang.name());
+        richInputText.setColumns(40);
+        richInputText.setRows(10);
+        richInputText.setInlineStyle("margin:20px;");
+
         //richInputText.setContentStyle("font-weight:bold;color:green");
         addComponent(layOut, richInputText);
         return richInputText;
@@ -329,6 +356,7 @@ public class MainBean implements Serializable {
         richInputFile.setLabel("Image");
         richInputFile.setAutoSubmit(true);
         richInputFile.addValueChangeListener(resolveValueChangeListener("#{MainBean.uploadContentImage}"));
+        richInputFile.setInlineStyle("margin:20px;");
         //richInputText.setContentStyle("font-weight:bold;color:green");
         addComponent(layOut, richInputFile);
         return richInputFile;
@@ -339,8 +367,9 @@ public class MainBean implements Serializable {
         Random r = new Random();
         richLink.setId("rit1" + r.nextInt());
         richLink.setText("Remove");
-        richLink.setInlineStyle("font-size:small;");
+        richLink.setInlineStyle("font-size:small; margin:50px;");
         richLink.addActionListener(resolveActionListener("#{MainBean.removePanal}"));
+
         //richInputText.setContentStyle("font-weight:bold;color:green");
         addComponent(layOut, richLink);
         return richLink;
@@ -358,13 +387,13 @@ public class MainBean implements Serializable {
         return richOutPut;
     }
 
-    public RichPanelGroupLayout createaddCompPanalGroup() {
+    public RichPanelGroupLayout createaddCompPanalGroup(RichPanelGroupLayout parent, String layout) {
         RichPanelGroupLayout richOutPut = new RichPanelGroupLayout();
         Random r = new Random();
         richOutPut.setId("rit1" + r.nextInt());
-
+        richOutPut.setLayout(layout);
         //richInputText.setContentStyle("font-weight:bold;color:green");
-        addComponent(getPanalGroupComp(), richOutPut);
+        addComponent(parent, richOutPut);
         return richOutPut;
     }
 
@@ -419,25 +448,29 @@ public class MainBean implements Serializable {
     }
 
 
-    public void openNewWindow(String image, String content, String title, String thumbNail) {
+    public void openNewWindow(String image, String content, String title, String thumbNail,String desc) {
         ExtendedRenderKitService erks =
             Service.getRenderKitService(FacesContext.getCurrentInstance(), ExtendedRenderKitService.class);
-         //TODO
+        //TODO
         //Change id to deployment server
-        String contentEncod="";
-        String titleEncod="";
+        String contentEncod = "";
+        String titleEncod = "";
+        String descEncod="";
         try {
-            if(!content.equals("")&&content!=null)
-            contentEncod = URLEncoder.encode(content, "UTF-8");
-            if(!title.equals("")&&title!=null)
-            titleEncod=URLEncoder.encode(title, "UTF-8");
-            
-            
-        } catch (UnsupportedEncodingException e) {
+            if (!content.equals("") && content != null)
+                contentEncod = URLEncoder.encode(content, "UTF-8");
+            if (!title.equals("") && title != null)
+                titleEncod = URLEncoder.encode(title, "UTF-8");
+            if (!desc.equals("") && desc != null)
+                descEncod = URLEncoder.encode(desc, "UTF-8");
+
+
+        } catch (Exception e) {
         }
+        System.out.println(">>>>>>>>desc"+descEncod+"DESCRIPTION "+desc+"title "+titleEncod+"content "+contentEncod);
         erks.addScript(FacesContext.getCurrentInstance(),
                        "window.open('http://127.0.0.1:7101/ViewController/htmlreviewservlet?image=" + image +
-                       "&content="+contentEncod+"&title=" + titleEncod + "&thumbnail=" + thumbNail + "');");
+                       "&content=" + contentEncod + "&title=" + titleEncod + "&thumbnail=" + thumbNail +  "&desc=" + descEncod+"');");
     }
 
 
@@ -535,21 +568,26 @@ public class MainBean implements Serializable {
     }
 
 
-    public String getContentString() {
+    public String getContentString(Language lang) {
         String content = "";
         for (int i = 0; i < containersList.size(); i++) {
-            HtmlInputTextarea inText = (HtmlInputTextarea) containersList.get(i).getChildren().get(0);
-            RichInputFile imageComp = (RichInputFile) containersList.get(i).getChildren().get(1);
-            String textVal = (String) inText.getValue();
-            content += "<p>" + textVal + "</p>";
- 
+            if (lang == Language.ENGLISH) {
+                RichInputText inText = (RichInputText) containersList.get(i).getChildren().get(0);
+                String textVal = (String) inText.getValue();
+                content += "<p>" + textVal + "</p>";
+            } else {
+                RichInputText inText = (RichInputText) containersList.get(i).getChildren().get(1);
+                String textVal = (String) inText.getValue();
+                content += "<p>" + textVal + "</p>";
+            }
             //--------------------------------
+            RichInputFile imageComp = (RichInputFile) containersList.get(i).getChildren().get(2);
             if (imageComp.getValue() != null) {
                 String imageName = ((UploadedFile) imageComp.getValue()).getFilename();
                 String imgDID = contentDIDMap.get(imageName);
                 String url = getUcmURL(imgDID);
                 content += "<img src=" + url + " alt='image' width=\"300\" height=\"400\" >";
-            } 
+            }
 
             i++;
         }
@@ -562,11 +600,13 @@ public class MainBean implements Serializable {
 
     public void insertData(ActionEvent actionEvent) {
         // Add event code here...
-        System.out.println(getContentString());
+
 
         try {
-            insertInNewsTable(getArabicTitle(), getTitle(), getArabicDesc(), getEnglishDesc(), createBlobDomain(getContentString()),
-                              createBlobDomain(getContentString()), createBlobDomain(getHTMLThumbNail()), "Ragab");
+            insertInNewsTable(getArabicTitle(), getTitle(), getArabicDesc(), getEnglishDesc(),
+                              createBlobDomain(getContentString(Language.ARABIC)),
+                              createBlobDomain(getContentString(Language.ENGLISH)),
+                              createBlobDomain(getHTMLThumbNail()), "Ragab");
         } catch (IOException e) {
         }
 
@@ -587,8 +627,8 @@ public class MainBean implements Serializable {
         if (vo.hasNext()) {
             Row r = vo.next();
             BlobDomain b = (BlobDomain) r.getAttribute(5);
-
-            System.out.println(b.toString() + "   " + b);
+            BlobDomain b1 = (BlobDomain) r.getAttribute(6);
+            System.out.println(">>>>>>>>>>>>" + "Arabic:   " + b+ "  ,English:   " + b1);
         }
 
     }
@@ -617,6 +657,19 @@ public class MainBean implements Serializable {
     public String getArabicDesc() {
         return arabicDesc;
     }
-    
-    public enum Language{ENGLISH,ARABIC}
+
+    public void setIncasd(RichInputText incasd) {
+        this.incasd = incasd;
+    }
+
+    public RichInputText getIncasd() {
+        return incasd;
+    }
+
+   
+
+    public enum Language {
+        ENGLISH,
+        ARABIC
+    }
 }

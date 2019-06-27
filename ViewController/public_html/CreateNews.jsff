@@ -9,14 +9,21 @@
                     <f:facet name="bottom"/>
                     <f:facet name="center">
             <af:panelGroupLayout id="pgl1" layout="vertical" binding="#{MainBean.panalGroupComp}">
-                <af:inputText label="English title" id="it1" value="#{MainBean.title}" labelStyle="font-size:large;"/>
-                <af:inputText label="English description" id="it3" labelStyle="font-size:large;"
-                              value="#{MainBean.englishDesc}"/>
-                <af:spacer width="10" height="10" id="s3"/>
-                <af:inputText label="Arabic title" id="it2" labelStyle="font-size:large;"
-                              value="#{MainBean.arabicTitle}"/>
-                <af:inputText label="Arabic description" id="it4" labelStyle="font-size:large;"
-                              value="#{MainBean.arabicDesc}"/>
+                <af:panelGroupLayout id="pgl3" layout="horizontal" valign="middle">
+                    <af:panelFormLayout id="pfl1">
+                        <af:inputText label="English title" id="it1" value="#{MainBean.title}"
+                                      labelStyle="font-size:large;"/>
+                        <af:inputText label="English description" id="it3" labelStyle="font-size:large;"
+                                      value="#{MainBean.englishDesc}"/>
+                    </af:panelFormLayout>
+                    <af:spacer width="10" height="10" id="s3"/>
+                    <af:panelFormLayout id="pfl2">
+                        <af:inputText label="Arabic title" id="it2" labelStyle="font-size:large;"
+                                      value="#{MainBean.arabicTitle}"/>
+                        <af:inputText label="Arabic description" id="it4" labelStyle="font-size:large;"
+                                      value="#{MainBean.arabicDesc}"/>
+                    </af:panelFormLayout>
+                </af:panelGroupLayout>
                 <af:spacer width="10" height="10" id="s1"/>
                 <af:inputFile label="Thumbnail" id="if11" autoSubmit="true"
                               valueChangeListener="#{MainBean.uploadThumbnail}" labelStyle="font-size:large;"/>
@@ -25,14 +32,13 @@
                     <f:facet name="toolbar">
                         <af:toolbar id="t1">
                             <af:button text="Add " id="b1" actionListener="#{MainBean.addComponnent}"/>
-                            <af:button text="button 1" id="b5" actionListener="#{MainBean.test}"/>
+                            <af:button text="Arabic preview" id="b5" actionListener="#{MainBean.arabicPreview}"/>
+                            <af:button text="English preview" id="b3" actionListener="#{MainBean.preview}"/>
                             <af:button text="Commit" id="b4" action="#{bindings.Commit.execute}"
                                        actionListener="#{MainBean.insertData}"/>
                         </af:toolbar>
                     </f:facet>
-                    <f:facet name="menuBar">
-                        <af:button text="OpenHTML" id="b3" actionListener="#{MainBean.preview}"/>
-                    </f:facet>
+                    <f:facet name="menuBar"/>
                     <f:facet name="legend">
                         <af:panelGroupLayout id="pgl2" layout="vertical"/>
                     </f:facet>

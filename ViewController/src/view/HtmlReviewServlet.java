@@ -23,7 +23,7 @@ public class HtmlReviewServlet extends HttpServlet {
         String title = request.getParameter("title");
 
         String thumbNail = request.getParameter("thumbnail");
-
+        String description=request.getParameter("desc");
 
         String[] content = request.getParameter("content").split(splitter);
         String[] imagesList = request.getParameter("image").split(",");
@@ -56,7 +56,7 @@ public class HtmlReviewServlet extends HttpServlet {
         out.println("<img src=" + thumbNail + " alt='image' style=\"width:100%; height: 350px;\" >");
         out.println("<div class=\"text-block\"> ");
         out.println("<h4>" + title + "</h4>");
-        out.println("<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet, nulla et dictum</p>");
+        out.println("<p>"+description+"</p>");
         out.println("</div>");        
         out.println("</div>");
         
@@ -74,7 +74,7 @@ public class HtmlReviewServlet extends HttpServlet {
             out.println("<img class=\"cimage\" src=" + imagesList[i] + " alt='image' width=\"300\" height=\"400\" style=\"margin: 25px 50px 75px 100px;  float: none;\" >");
             
             if(content[i]!=null && !content[i].equals("NA"))
-            out.println("<p style=\"font-weight: 400;  font-size: large; \">" + content[i] + "</p>");
+            out.println("<p dir=\"auto\" style=\"font-weight: 400;  font-size: large; \">" + content[i] + "</p>");
             
             out.println("</div>");
             
