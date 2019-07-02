@@ -28,13 +28,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Handler;
+
 import javax.el.ELContext;
 import javax.el.ExpressionFactory;
 
 import javax.el.MethodExpression;
 
 import javax.faces.application.Application;
+import javax.faces.application.FacesMessage;
+import javax.faces.application.ViewHandler;
 import javax.faces.component.UIComponent;
+import javax.faces.component.UIViewRoot;
 import javax.faces.component.html.HtmlGraphicImage;
 import javax.faces.component.html.HtmlInputTextarea;
 import javax.faces.context.FacesContext;
@@ -101,7 +111,8 @@ public class MainBean implements Serializable {
     private String englishDesc;
     private String arabicDesc;
     private RichInputText incasd;
-
+    private RichOutputText thumbNailStateComp;
+    AdfFacesContext context=AdfFacesContext.getCurrentInstance();
     public MainBean() {
         try {
             utils = new UCMUtilities("idc://10.3.1.88:4444", "weblogic", "welcome1");
@@ -197,6 +208,9 @@ public class MainBean implements Serializable {
 
             // uploadFile(fileVal, jdevPath);
             htmlThumbNail = uploadFileToUCM(fileVal);
+            getThumbNailStateComp().setVisible(false);
+            context.addPartialTarget(getThumbNailStateComp());
+            
 
         }
     }
@@ -210,12 +224,15 @@ public class MainBean implements Serializable {
 
             String imageDid = uploadFileToUCM(fileVal);
             contentDIDMap.put(fileVal.getFilename(), imageDid);
-
-
+            
+            
+          
+            RichOutputText outputText = (RichOutputText) valueChangeEvent.getComponent().getParent().getChildren().get(3);
+            outputText.setVisible(false);
+            context.addPartialTarget(outputText.getParent());
         }
     }
-
-
+   
     private String uploadFileToUCM(UploadedFile file) {
 
         UploadedFile myfile = file;
@@ -261,6 +278,7 @@ public class MainBean implements Serializable {
         createInputTextComponent(container, Language.ENGLISH);
         createInputTextComponent(container, Language.ARABIC);
         createFileUploadeComp(container);
+        createOutPutComp("uploading...",container);
         createRemovePanalComp(container);
 
 
@@ -275,11 +293,16 @@ public class MainBean implements Serializable {
 
     public void preview(ActionEvent actionEvent) {
         // Add event code here...
+        if(checkImagesUploaded())
         showPreview(Language.ENGLISH);
+        
+        
     }
     public void arabicPreview(ActionEvent actionEvent) {
         // Add event code here...
+        if(checkImagesUploaded())
         showPreview(Language.ARABIC);
+        
     }
 
     public void showPreview(Language lang) {
@@ -376,14 +399,16 @@ public class MainBean implements Serializable {
     }
     //---------------------------------------------------------------Preview Comp
 
-    public RichOutputText createOutPutComp(String value) {
+    public RichOutputText createOutPutComp(String value,RichPanelGroupLayout layOut) {
         RichOutputText richOutPut = new RichOutputText();
         Random r = new Random();
         richOutPut.setId("rit1" + r.nextInt());
         richOutPut.setValue(value);
-        richOutPut.setInlineStyle("font-size:20px;");
+        richOutPut.setInlineStyle("font-size:20px; color:Red;");
+        richOutPut.setVisible(false);
+        richOutPut.setStyleClass("auto-hide");
         //richInputText.setContentStyle("font-weight:bold;color:green");
-        addComponent(getPreviewPanalGroupComp(), richOutPut);
+        addComponent(layOut, richOutPut);
         return richOutPut;
     }
 
@@ -490,7 +515,7 @@ public class MainBean implements Serializable {
             HtmlInputTextarea inText = (HtmlInputTextarea) containersList.get(i).getChildren().get(0);
             RichInputFile imageComp = (RichInputFile) containersList.get(i).getChildren().get(1);
             String textVal = (String) inText.getValue();
-            createOutPutComp(textVal);
+            //createOutPutComp(textVal);
 
             if (imageComp.getValue() != null) {
                 String imageSrc = binPath + ((UploadedFile) imageComp.getValue()).getFilename();
@@ -563,7 +588,13 @@ public class MainBean implements Serializable {
 
     public void test(ActionEvent actionEvent) {
         // Add event code here...
-        readBlob();
+        //readBlob();
+        //timer.cancel();
+       
+           
+        
+      
+        
 
     }
 
@@ -601,7 +632,7 @@ public class MainBean implements Serializable {
     public void insertData(ActionEvent actionEvent) {
         // Add event code here...
 
-
+        if(checkImagesUploaded())
         try {
             insertInNewsTable(getArabicTitle(), getTitle(), getArabicDesc(), getEnglishDesc(),
                               createBlobDomain(getContentString(Language.ARABIC)),
@@ -609,7 +640,7 @@ public class MainBean implements Serializable {
                               createBlobDomain(getHTMLThumbNail()), "Ragab");
         } catch (IOException e) {
         }
-
+    
     }
 
     public String getHTMLThumbNail() {
@@ -665,8 +696,129 @@ public class MainBean implements Serializable {
     public RichInputText getIncasd() {
         return incasd;
     }
-
+     
    
+  
+   
+    public void refresh(){
+            FacesContext context = FacesContext.getCurrentInstance();
+               String currentView = context.getViewRoot().getViewId();
+               ViewHandler vh = context.getApplication().getViewHandler();
+               UIViewRoot x = vh.createView(context, currentView);
+               x.setViewId(currentView);
+               context.setViewRoot(x);}
+    
+    
+    public boolean checkImagesUploaded()
+    {
+        List<RichPanelGroupLayout> checkList=cloneList(containersList);
+        boolean isReady=true;
+        
+        String thumbNailUrl=getUcmURL(htmlThumbNail);
+        System.out.println(">>>>>>thambNail url "+thumbNailUrl+"        " +htmlThumbNail);
+        if(thumbNailUrl==null ||thumbNailUrl.equals("")){
+            isReady=false;
+            thumbNailStateComp.setVisible(true);
+            thumbNailStateComp.setValue("Uploading...");
+            thumbNailStateComp.setInlineStyle("font-size:15px; color:Red;");
+            try{
+                context.addPartialTarget(getPanalGroupComp());
+            }catch(Exception e){System.out.println(">>>>>ERROR"+e.getMessage());}
+                System.out.println(">>>>>>>>>Ready");
+
+        }else{
+                thumbNailStateComp.setVisible(true);
+                thumbNailStateComp.setValue("Ready");
+                thumbNailStateComp.setInlineStyle("font-size:15px; color:Green;");
+                try{
+                    context.addPartialTarget(getPanalGroupComp());
+                }catch(Exception e){System.out.println(">>>>>ERROR"+e.getMessage());}
+                    System.out.println(">>>>>>>>>Ready");
+
+            
+            }
+        for(int i=0;i<checkList.size();i++)
+        {
+            RichInputFile imageComp = (RichInputFile) checkList.get(i).getChildren().get(2);
+            RichOutputText outputText = (RichOutputText) checkList.get(i).getChildren().get(3);
+            if (imageComp.getValue() != null) {
+                
+                String imageName = ((UploadedFile) imageComp.getValue()).getFilename();
+                System.out.println(">>>>>>>>"+imageName);
+                String imgDID = contentDIDMap.get(imageName);
+                String url = getUcmURL(imgDID);
+                if(url!=null && !url.equals(""))
+                {
+                    outputText.setVisible(true);
+                    outputText.setValue("Ready");
+                    outputText.setInlineStyle("font-size:15px; color:Green;");
+                    
+                    try{
+                        context.addPartialTarget(getPanalGroupComp());
+                    }catch(Exception e){System.out.println(">>>>>ERROR"+e.getMessage());}
+                        System.out.println(">>>>>>>>>Ready");
+
+                    
+                }else{
+                        outputText.setInlineStyle("font-size:15px; color:Red;");
+                        outputText.setVisible(true);
+                        outputText.setValue("Uploading.....");
+                    
+                    isReady=false;
+                try{
+                    context.addPartialTarget(getPanalGroupComp());
+                }catch(Exception e){System.out.println(">>>>>ERROR"+e.getMessage());}
+                   
+            }
+        
+        }
+        // your code here
+        
+        }
+       if(!isReady)
+       {showUploadingWarn();}
+       
+        return isReady;
+    }
+    
+    public String showUploadingWarn() {
+        
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        FacesMessage fMessage= new FacesMessage(FacesMessage.SEVERITY_INFO,null,"Please wait till all files uploaded");
+        
+        ctx.addMessage(null, fMessage);
+        
+        ExtendedRenderKitService erks = Service.getRenderKitService(ctx, ExtendedRenderKitService.class);
+        StringBuilder builder= new StringBuilder();
+        builder.append("jQuery('.auto-hide').delay(3000).hide('fast');");
+        erks.addScript(ctx, builder.toString());
+        
+        return null;
+    }
+    public  List<RichPanelGroupLayout> cloneList(List<RichPanelGroupLayout> list) {
+         List<RichPanelGroupLayout> clone = new ArrayList<>(list.size());
+        for (RichPanelGroupLayout item : list)
+            clone.add(item);
+        return clone;
+    }
+
+
+    public void showNotReadyMessage()
+    {
+            FacesMessage errorMessage =
+                          new FacesMessage("Some files not ready", "Please Wait till all files uploaded");
+                      errorMessage.setSeverity(FacesMessage.SEVERITY_FATAL);
+                      FacesContext.getCurrentInstance().addMessage(null, errorMessage);
+    }
+    
+    
+    public void setThumbNailStateComp(RichOutputText thumbNailStateComp) {
+        this.thumbNailStateComp = thumbNailStateComp;
+    }
+
+    public RichOutputText getThumbNailStateComp() {
+        return thumbNailStateComp;
+    }
 
     public enum Language {
         ENGLISH,

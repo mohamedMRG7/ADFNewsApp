@@ -2,36 +2,47 @@
 <jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.1" xmlns:af="http://xmlns.oracle.com/adf/faces/rich"
           xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html">
   <af:panelStretchLayout id="psl1"
-                         inlineStyle="margin-bottom:50px; margin-left:50px; margin-right:50px; margin-top:50px; border-color:Black; border-bottom-left-radius:20px 20px; border-bottom-right-radius:20px 20px; border-top-left-radius:20px 20px; border-top-right-radius:20px;">
+                         inlineStyle="margin-bottom:50px;"
+                         dimensionsFrom="children">
     <f:facet name="start"/>
                     <f:facet name="end"/>
                     <f:facet name="top"/>
                     <f:facet name="bottom"/>
                     <f:facet name="center">
-            <af:panelGroupLayout id="pgl1" layout="vertical" binding="#{MainBean.panalGroupComp}">
+            <af:panelGroupLayout id="pgl1" layout="vertical" binding="#{MainBean.panalGroupComp}"
+                                 inlineStyle="margin:30px; ">
+                                  <af:messages id="m1" inline="true" styleClass="auto-hide"/>
+                <af:spacer width="10" height="20" id="s5"/>
                 <af:panelGroupLayout id="pgl3" layout="horizontal" valign="middle">
                     <af:panelFormLayout id="pfl1">
                         <af:inputText label="English title" id="it1" value="#{MainBean.title}"
                                       labelStyle="font-size:large;"/>
                         <af:inputText label="English description" id="it3" labelStyle="font-size:large;"
-                                      value="#{MainBean.englishDesc}"/>
+                                      value="#{MainBean.englishDesc}" rows="3"/>
                     </af:panelFormLayout>
                     <af:spacer width="10" height="10" id="s3"/>
                     <af:panelFormLayout id="pfl2">
                         <af:inputText label="Arabic title" id="it2" labelStyle="font-size:large;"
                                       value="#{MainBean.arabicTitle}"/>
                         <af:inputText label="Arabic description" id="it4" labelStyle="font-size:large;"
-                                      value="#{MainBean.arabicDesc}"/>
+                                      value="#{MainBean.arabicDesc}" rows="3"/>
                     </af:panelFormLayout>
                 </af:panelGroupLayout>
                 <af:spacer width="10" height="10" id="s1"/>
-                <af:inputFile label="Thumbnail" id="if11" autoSubmit="true"
-                              valueChangeListener="#{MainBean.uploadThumbnail}" labelStyle="font-size:large;"/>
+                <af:panelGroupLayout id="pgl4" layout="horizontal">
+                    <af:inputFile label="Thumbnail" id="if11" autoSubmit="true"
+                                  valueChangeListener="#{MainBean.uploadThumbnail}" labelStyle="font-size:large;"/>
+                    <af:spacer width="10" height="10" id="s4"/>
+                    <af:outputText value="outputText1" id="ot1" styleClass="auto-hide" inlineStyle="font-size:15px;"
+                                   visible="false"
+                                   binding="#{MainBean.thumbNailStateComp}"/>
+                </af:panelGroupLayout>
                 <af:spacer width="10" height="30" id="s2"/>
-                <af:panelHeader text="Content" id="ph1">
+                <af:panelHeader text="Content" id="ph1" inlineStyle="margin-top:20px;">
                     <f:facet name="toolbar">
                         <af:toolbar id="t1">
                             <af:button text="Add " id="b1" actionListener="#{MainBean.addComponnent}"/>
+                            <af:button text="button 1" id="b2" actionListener="#{MainBean.test}"/>
                             <af:button text="Arabic preview" id="b5" actionListener="#{MainBean.arabicPreview}"/>
                             <af:button text="English preview" id="b3" actionListener="#{MainBean.preview}"/>
                             <af:button text="Commit" id="b4" action="#{bindings.Commit.execute}"
